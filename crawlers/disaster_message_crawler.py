@@ -1,7 +1,8 @@
 from glob import glob
 from csv import writer
-from selenium import webdriver
 from utils import print_time
+from datetime import datetime
+from selenium import webdriver
 from os import rename, getcwd, chdir
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -36,8 +37,11 @@ def disaster_message_crawler():
 
         p = compile(r'\d{14}')
         t = p.search(file_list[0]).group()
-        date = t[:8]
+        new_date = datetime.strptime(t[:8], '%Y%m%d')
         start = f'{t[:4]}/{t[4:6]}/{t[6:8]} {t[8:10]}:{t[10:12]}:{t[12:]}'
+
+        if new_date > datetime.strptime(date, '%Y%m%d'):
+            date = datetime.strftime(new_date, '%Y%m%d')
 
         f = open(file_list[0], 'a', encoding='utf-8', newline='')
     else:
