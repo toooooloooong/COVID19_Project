@@ -1,5 +1,4 @@
 __pycache__
-data/analyzed/*.csv
-data/preprocessed/*.csv
-data/raw/*.csv
+data/*/*
+!data/*/.keep
 chromedriver.exe
