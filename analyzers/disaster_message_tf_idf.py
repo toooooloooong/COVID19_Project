@@ -1,47 +1,36 @@
-from os import rename
-from glob import glob
-from re import compile
-from utils import print_time
+from utils import print_time, File_manager
 from pandas import read_csv, DataFrame, Series
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 
 @print_time
 def disaster_message_tf_idf():
-    input_path = './data/preprocessed\\disaster_messages_preprocessed_'
-    output_path = './data/analyzed\\disaster_messages_tf_idf_'
-    input_file_list = glob(f'{input_path}*')
-    output_file_list = glob(f'{output_path}*')
+    input = File_manager('preprocessed', 'disasterMessage')
+    tf_idf = File_manager('analyzed', 'disasterMessageTFIDF')
+    idf = File_manager('analyzed', 'disasterMessageIDF')
+    cmpr = idf.compare_version(input.ver)
+    new_ver = input.ver.copy()
 
-    if not input_file_list:
+    if new_ver['disasterMessage'] == '0':
+        return
+    if idf.ver[cmpr[0]] == new_ver['disasterMessage'] and len(cmpr) == 1:
         return
 
-    p = compile(r'(\d{14})_(stopwords_ver\d+)_(userdic_ver\d+)')
-    search1 = p.search(input_file_list[0])
-    t = search1.group(1)
-    stopwords_ver = search1.group(2)
-    userdic_ver = search1.group(3)
-    new_output_path = f'{output_path}{t}_{stopwords_ver}_{userdic_ver}.csv'
+    new_ver['disasterMessageTFIDF'] = new_ver['disasterMessage']
+    del new_ver['disasterMessage']
+    tf_idf.update_version(new_ver)
+    new_ver['disasterMessageIDF'] = new_ver['disasterMessageTFIDF']
+    del new_ver['disasterMessageTFIDF']
+    idf.update_version(new_ver)
 
-    if output_file_list:
-        search2 = p.search(output_file_list[0])
-        if t != search2.group(1):
-            rename(output_file_list[0], new_output_path)
-        elif stopwords_ver != search2.group(2):
-            rename(output_file_list[0], new_output_path)
-        elif userdic_ver == search2.group(3):
-            rename(output_file_list[0], new_output_path)
-        else:
-            return
-
-    preprocessed = read_csv(input_file_list[0])
-    docs = preprocessed['tokens']
+    preprocessed_data = read_csv(input.path)
+    docs = preprocessed_data['tokens']
     tfidfv = TfidfVectorizer(
         lowercase=False, token_pattern=r'(?u)[^┃]+?(?=┃|$)'
         ).fit(docs)
     vocabs = sorted(tfidfv.vocabulary_, key=tfidfv.vocabulary_.get)
-    tfidf = DataFrame(tfidfv.transform(docs).toarray(), columns=vocabs)
-    idf = Series(tfidfv.idf_, index=vocabs).sort_values()
+    tf_idf_data = DataFrame(tfidfv.transform(docs).toarray(), columns=vocabs)
+    idf_data = Series(tfidfv.idf_, index=vocabs).sort_values()
 
-    tfidf.to_csv(new_output_path, index=False)
-    idf.to_csv('./data/analyzed\\disaster_messages_idf.csv', header=False)
+    tf_idf_data.to_csv(tf_idf.path, index=False)
+    idf_data.to_csv(idf.path, header=False)

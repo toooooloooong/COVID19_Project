@@ -1,5 +1,3 @@
-from os import rename
-from glob import glob
 from csv import writer
 from datetime import datetime
 from selenium import webdriver
@@ -22,33 +20,29 @@ class Message_loaded:
 @print_time
 def disaster_message_crawler():
     time = None
-    t = '20111118074344'
     date = '20160609'
     start = '2011/11/18 07:43:44'
-    path = './data/raw\\disaster_messages_'
-    file_list = glob(f'{path}*')
 
-    if file_list:
-        from re import compile
+    output = File_manager('raw', 'disasterMessage')
+    t = output.parse_version()['disasterMessage']
 
-        p = compile(r'\d{14}')
-        t = p.search(file_list[0]).group()
+    if t != '0':
         new_date = datetime.strptime(t[:8], '%Y%m%d')
         start = f'{t[:4]}/{t[4:6]}/{t[6:8]} {t[8:10]}:{t[10:12]}:{t[12:]}'
 
         if new_date > datetime.strptime(date, '%Y%m%d'):
             date = datetime.strftime(new_date, '%Y%m%d')
 
-        f = open(file_list[0], 'a', encoding='utf-8', newline='')
+        f = open(output.path, 'a', encoding='utf-8', newline='')
     else:
-        f = open(f'{path}.csv', 'w', encoding='utf-8', newline='')
+        f = open(output.path, 'w', encoding='utf-8', newline='')
 
     wr = writer(f)
 
     with webdriver.Chrome() as driver:
         wait = WebDriverWait(driver, 5)
 
-        if not file_list:
+        if t == '0':
             wr.writerow(['time', 'body', 'to'])
 
         driver.get(
@@ -91,5 +85,4 @@ def disaster_message_crawler():
 
     if time is not None:
         t = time.translate({ord(x): '' for x in ['/', ':', ' ']})
-        old_name = file_list[0] if file_list else f'{path}.csv'
-        rename(old_name, f'{path}{t}.csv')
+        output.update_version({'disasterMessage': t})

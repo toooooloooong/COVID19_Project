@@ -6,6 +6,7 @@ from re import compile
 class File_manager:
     def __init__(self, loc, subject, format='csv'):
         self.path = self.retrieve_path(loc, subject, format)
+        self.ver = self.parse_version()
 
     def retrieve_path(self, loc, subject, format):
         path_list = glob(f'./data/{loc}\\{subject}*.{format}')
@@ -17,11 +18,11 @@ class File_manager:
         else:
             return path_list[0]
 
-    def retrieve_file(self, mode):
-        return open(self.path, mode)
-
     def parse_version(self):
         return {k: v for k, v in compile(r'(\w+?)(\d+)_*').findall(self.path)}
+
+    def compare_version(self, ver):
+        return [k for k, v in self.ver.items() if ver.get(k) != self.ver[k]]
 
     def update_version(self, ver):
         def updater(m):
@@ -29,11 +30,11 @@ class File_manager:
 
         new_path = compile(r'(\w+?)(\d+)(_*)').sub(updater, self.path)
 
-        cur = self.parse_version()
-        append = '_'.join(f'{k}{v}' for k, v in ver.items() if k not in cur)
-        append = append if append == '' else f'_{append}'
+        etc = '_'.join(f'{k}{v}' for k, v in ver.items() if k not in self.ver)
+        etc = etc if etc == '' else f'_{etc}'
 
-        new_path = compile(r'(?!^\.)\..+?$').sub(fr'{append}\g<0>', new_path)
+        new_path = compile(r'(?!^\.)\..+?$').sub(fr'{etc}\g<0>', new_path)
 
         rename(self.path, new_path)
         self.path = new_path
+        self.ver = self.parse_version()

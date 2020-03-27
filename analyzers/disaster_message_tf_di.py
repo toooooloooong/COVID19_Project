@@ -1,39 +1,24 @@
-from os import rename
-from glob import glob
-from re import compile
-from utils import print_time
+from utils import print_time, File_manager
 from pandas import read_csv, DataFrame, to_datetime
 
 
 @print_time
 def disaster_message_tf_di():
-    input_path = './data/preprocessed\\disaster_messages_preprocessed_'
-    output_path = './data/analyzed\\disaster_messages_tf_di_'
-    input_file_list = glob(f'{input_path}*')
-    output_file_list = glob(f'{output_path}*')
+    input = File_manager('preprocessed', 'disasterMessage')
+    output = File_manager('analyzed', 'disasterMessageTFDI')
+    cmpr = output.compare_version(input.ver)
+    new_ver = input.ver.copy()
 
-    if not input_file_list:
+    if new_ver['disasterMessage'] == '0':
+        return
+    if output.ver[cmpr[0]] == new_ver['disasterMessage'] and len(cmpr) == 1:
         return
 
-    p = compile(r'(\d{14})_(stopwords_ver\d+)_(userdic_ver\d+)')
-    search1 = p.search(input_file_list[0])
-    t = search1.group(1)
-    stopwords_ver = search1.group(2)
-    userdic_ver = search1.group(3)
-    new_output_path = f'{output_path}{t}_{stopwords_ver}_{userdic_ver}.csv'
+    new_ver['disasterMessageTFDI'] = new_ver['disasterMessage']
+    del new_ver['disasterMessage']
+    output.update_version(new_ver)
 
-    if output_file_list:
-        search2 = p.search(output_file_list[0])
-        if t != search2.group(1):
-            rename(output_file_list[0], new_output_path)
-        elif stopwords_ver != search2.group(2):
-            rename(output_file_list[0], new_output_path)
-        elif userdic_ver == search2.group(3):
-            rename(output_file_list[0], new_output_path)
-        else:
-            return
-
-    preprocessed = read_csv(input_file_list[0])
+    preprocessed = read_csv(input.path)
     preprocessed['time'] = to_datetime(preprocessed['time'])
     tokens = set(w for doc in preprocessed['tokens'] for w in doc.split('┃'))
     tf_di = DataFrame(index=tokens)
@@ -54,4 +39,4 @@ def disaster_message_tf_di():
 
         tf_di['tf_di'] += col*(i+1)/n
 
-    tf_di.sort_values(by='tf_di', ascending=False).to_csv(new_output_path)
+    tf_di.sort_values(by='tf_di', ascending=False).to_csv(output.path)
