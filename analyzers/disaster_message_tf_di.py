@@ -2,14 +2,13 @@ from os import rename
 from glob import glob
 from re import compile
 from utils import print_time
-from pandas import read_csv, DataFrame, Series
-from sklearn.feature_extraction.text import TfidfVectorizer
+from pandas import read_csv, DataFrame, to_datetime
 
 
 @print_time
-def disaster_message_tf_idf():
+def disaster_message_tf_di():
     input_path = './data/preprocessed\\disaster_messages_preprocessed_'
-    output_path = './data/analyzed\\disaster_messages_tf_idf_'
+    output_path = './data/analyzed\\disaster_messages_tf_di_'
     input_file_list = glob(f'{input_path}*')
     output_file_list = glob(f'{output_path}*')
 
@@ -35,13 +34,24 @@ def disaster_message_tf_idf():
             return
 
     preprocessed = read_csv(input_file_list[0])
-    docs = preprocessed['tokens']
-    tfidfv = TfidfVectorizer(
-        lowercase=False, token_pattern=r'(?u)[^┃]+?(?=┃|$)'
-        ).fit(docs)
-    vocabs = sorted(tfidfv.vocabulary_, key=tfidfv.vocabulary_.get)
-    tfidf = DataFrame(tfidfv.transform(docs).toarray(), columns=vocabs)
-    idf = Series(tfidfv.idf_, index=vocabs).sort_values()
+    preprocessed['time'] = to_datetime(preprocessed['time'])
+    tokens = set(w for doc in preprocessed['tokens'] for w in doc.split('┃'))
+    tf_di = DataFrame(index=tokens)
 
-    tfidf.to_csv(new_output_path, index=False)
-    idf.to_csv('./data/analyzed\\disaster_messages_idf.csv', header=False)
+    for year, data in preprocessed.groupby(preprocessed.time.dt.year):
+        total = []
+        for token in tokens:
+            count = data['tokens'].apply(lambda x: x.split('┃').count(token))
+            total.append(count.sum())
+        tf_di[year] = total/sum(total)
+
+    n = len(tf_di.columns)
+    tf_di['tf_di'] = 0
+
+    for i, (name, col) in enumerate(tf_di.iteritems()):
+        if name == 'tf_di':
+            break
+
+        tf_di['tf_di'] += col*(i+1)/n
+
+    tf_di.sort_values(by='tf_di', ascending=False).to_csv(new_output_path)

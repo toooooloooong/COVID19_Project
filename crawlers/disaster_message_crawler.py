@@ -1,9 +1,9 @@
+from os import rename
 from glob import glob
 from csv import writer
-from utils import print_time
 from datetime import datetime
 from selenium import webdriver
-from os import rename, getcwd, chdir
+from utils import print_time, File_manager
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
@@ -26,10 +26,6 @@ def disaster_message_crawler():
     date = '20160609'
     start = '2011/11/18 07:43:44'
     path = './data/raw\\disaster_messages_'
-
-    if getcwd()[-16:] != 'COVID-19 Project':
-        chdir('..')
-
     file_list = glob(f'{path}*')
 
     if file_list:
@@ -97,7 +93,3 @@ def disaster_message_crawler():
         t = time.translate({ord(x): '' for x in ['/', ':', ' ']})
         old_name = file_list[0] if file_list else f'{path}.csv'
         rename(old_name, f'{path}{t}.csv')
-
-
-if __name__ == '__main__':
-    disaster_message_crawler()
