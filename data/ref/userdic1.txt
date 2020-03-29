@@ -67,6 +67,9 @@
 권선	NNP
 귀산	NNP
 금곡교	NNP
+김도이미용실	NNP
+김성화웨딩	NNP
+김스타치킨	NNP
 김천교	NNP
 깃재	NNP
 꿈꾸는요리사	NNP
@@ -112,6 +115,7 @@
 대정	NNP
 대조기	NNG
 더그레이커피숍	NNP
+더나은동물메디컬센터	NNP
 더리터	NNP
 더무그 빵집	NNP
 더벤티	NNP
@@ -359,6 +363,7 @@
 야음	NNP
 약수골삼계탕	NNP
 약수골삼계탕옻계탕	NNP
+얌샘김밥	NNP
 양등	NNP
 양벌	NNP
 양월교동길	NNP
@@ -425,6 +430,7 @@
 을숙도초	NNP
 응암	NNP
 이문	NNP
+이솝페이블	NNP
 이차돌	NNP
 인보	NNP
 인사혁신처	NNP
@@ -468,6 +474,7 @@
 주월	NNP
 줌바댄스	NNP
 중랑교	NNP
+중마	NNP
 중앙천로	NNP
 중앙초	NNP
 중화	NNP
