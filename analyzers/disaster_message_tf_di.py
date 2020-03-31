@@ -1,9 +1,20 @@
+import parmap
 from utils import print_time, File_manager
-from pandas import read_csv, DataFrame, to_datetime
+from pandas import read_csv, DataFrame, to_datetime, Series
+
+
+def worker(split, tokens):
+    freq = Series(index=tokens, dtype='f8')
+    for token in tokens:
+        freq[token] = split[1]['tokens'].apply(
+            lambda x: x.split('┃').count(token)
+            ).sum()
+
+    return split[0], freq/freq.sum()
 
 
 @print_time
-def disaster_message_tf_di():
+def disaster_message_tf_di(max_workers):
     input = File_manager('preprocessed', 'disasterMessage')
     output = File_manager('analyzed', 'disasterMessageTFDI')
     cmpr = output.compare_version(input.ver)
@@ -21,14 +32,17 @@ def disaster_message_tf_di():
     preprocessed = read_csv(input.path)
     preprocessed['time'] = to_datetime(preprocessed['time'])
     tokens = set(w for doc in preprocessed['tokens'] for w in doc.split('┃'))
+    tokens = list(tokens)
     tf_di = DataFrame(index=tokens)
+    split = preprocessed.groupby(preprocessed.time.dt.year)
+    res = parmap.map(
+        worker, split, tokens, pm_pbar=True, pm_processes=max_workers
+        )
 
-    for year, data in preprocessed.groupby(preprocessed.time.dt.year):
-        total = []
-        for token in tokens:
-            count = data['tokens'].apply(lambda x: x.split('┃').count(token))
-            total.append(count.sum())
-        tf_di[year] = total/sum(total)
+    for year, freq in res:
+        tf_di[year] = freq
+
+    tf_di = tf_di.reindex(sorted(tf_di.columns), axis=1)
 
     n = len(tf_di.columns)
     tf_di['tf_di'] = 0
