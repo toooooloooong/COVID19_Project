@@ -13,10 +13,7 @@ def main(crawl, preprocess, analyze, max_workers):
         for i in dir(crawlers):
             item = getattr(crawlers, i)
             if callable(item):
-                try:
-                    item(m)
-                except TypeError:
-                    item()
+                item(m)
 
     if preprocess == 'True':
         import preprocessors
@@ -24,10 +21,7 @@ def main(crawl, preprocess, analyze, max_workers):
         for i in dir(preprocessors):
             item = getattr(preprocessors, i)
             if callable(item):
-                try:
-                    item(m)
-                except TypeError:
-                    item()
+                item(m)
 
     if analyze == 'True':
         import analyzers
@@ -35,10 +29,7 @@ def main(crawl, preprocess, analyze, max_workers):
         for i in dir(analyzers):
             item = getattr(analyzers, i)
             if callable(item):
-                try:
-                    item(m)
-                except TypeError:
-                    item()
+                item(m)
 
 
 if __name__ == '__main__':

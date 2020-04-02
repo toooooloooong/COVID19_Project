@@ -1,11 +1,10 @@
 import parmap
 from re import compile
-from datetime import datetime
 from numpy import array_split
 from konlpy.tag import Komoran
 from multiprocessing import Pool
 from utils import print_time, File_manager
-from pandas import read_csv, to_datetime, Series, concat
+from pandas import read_csv, Series, concat
 
 komoran = None
 
@@ -48,8 +47,6 @@ def tsk(df):
 def disaster_message_preprocessor(max_workers):
     mode = 'w'
     input = File_manager('raw', 'disasterMessage')
-    userdic = File_manager('ref', 'userdic', format='txt')
-    stopwords = File_manager('ref', 'stopwords')
     output = File_manager('preprocessed', 'disasterMessage')
     new_ver = input.ver.copy()
 
@@ -58,8 +55,8 @@ def disaster_message_preprocessor(max_workers):
 
     raw = read_csv(input.path)
     t = output.ver['disasterMessage']
-    new_ver.update(userdic.ver)
-    new_ver.update(stopwords.ver)
+    new_ver.update(File_manager('ref', 'userdic', format='txt').ver)
+    new_ver.update(File_manager('ref', 'stopwords').ver)
     compare = output.compare_version(new_ver)
     header = True
     n = len(compare)

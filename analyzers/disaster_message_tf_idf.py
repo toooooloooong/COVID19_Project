@@ -4,7 +4,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 
 
 @print_time
-def disaster_message_tf_idf():
+def disaster_message_tf_idf(max_workers):
     input = File_manager('preprocessed', 'disasterMessage')
     tf_idf = File_manager('analyzed', 'disasterMessageTFIDF')
     idf = File_manager('analyzed', 'disasterMessageIDF')

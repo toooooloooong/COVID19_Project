@@ -127,7 +127,7 @@ def worker(rng, options, lst):
 @print_time
 def disaster_message_crawler(max_workers):
     total = None
-    minimun = 50
+    minimum = 10
     message_list = []
     output = File_manager('raw', 'disasterMessage')
     n = int(output.parse_version()['disasterMessage'])
@@ -155,9 +155,10 @@ def disaster_message_crawler(max_workers):
         total = int(driver.find_element_by_id('totCnt').text)
 
         if total == n:
+            print('Collected 0 new item.')
             return
 
-        num_workers = min(max((total - n) // minimun, 1), max_workers)
+        num_workers = min(max((total - n) // minimum, 1), max_workers)
         split = get_split(total, n, num_workers)
 
         with Manager() as manager:
